@@ -222,7 +222,14 @@
   }
 
   function siguientePregunta() { nivel++; cargarPregunta(); }
-  function reiniciarJuego() { nivel = 0; puntaje = 0; cargarPregunta(); document.getElementById("restart").style.display = "none"; }
+  function reiniciarJuego() {
+  nivel = 0;
+  puntaje = 0;
+  document.getElementById("result").textContent = ""; // Limpia mensaje final
+  document.getElementById("restart").style.display = "none";
+  cargarPregunta();
+}
+
 </script>
 
 </body>
