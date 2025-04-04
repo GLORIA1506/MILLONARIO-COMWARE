@@ -13,15 +13,15 @@
       margin: 0;
     }
 
-    #game-container {
-      background: rgba(0, 0, 0, 0.6);
+    .blur-container {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
       padding: 30px;
       max-width: 600px;
       margin: 90px auto;
       border-radius: 15px;
       box-shadow: 0 0 20px #00dffc;
       animation: fadeIn 1s ease;
-      backdrop-filter: blur(10px);
     }
 
     .question {
@@ -41,46 +41,71 @@
       border-radius: 10px;
       color: white;
       cursor: pointer;
-      transition: transform 0.2s, background 0.2s;
+      transition: transform 0.2s, background 0.3s;
     }
 
-    .option:hover, #restart:hover, #start-btn:hover {
+    .option:hover {
       background: #005bb5;
       transform: scale(1.05);
     }
 
-    .correct {
-      background: green !important;
-    }
-
-    .incorrect {
-      background: red !important;
-    }
-
     #timer {
-      font-size: 20px;
+      font-size: 18px;
       color: yellow;
-      margin: 10px 0;
-      float: left;
+      position: absolute;
+      top: 20px;
+      left: 30px;
     }
 
-    #score {
+    #points {
+      font-size: 18px;
+      color: lightgreen;
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+
+    #result {
+      margin-top: 15px;
       font-size: 20px;
       color: #00ff99;
-      margin: 10px 0;
-      float: right;
+      animation: fadeIn 0.5s ease-in-out;
     }
 
-    #restart, #start-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: crimson;
-      color: white;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+    #level {
+      font-size: 18px;
+      font-weight: bold;
+      color: #00ffcc;
+      margin-bottom: 10px;
+    }
+
+    .hidden {
       display: none;
+    }
+
+    #start-screen, #final-screen {
+      text-align: center;
+      padding: 40px;
+      max-width: 500px;
+      margin: 120px auto;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 0 30px #00dffc;
+    }
+
+    #start-screen button, #final-screen button {
+      padding: 12px 24px;
+      font-size: 18px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #start-screen button:hover, #final-screen button:hover {
+      background: #218838;
     }
 
     @keyframes pulse {
@@ -98,24 +123,41 @@
 
 <audio id="musica-fondo" src="AUDIO.MP3.mp3" loop autoplay></audio>
 
-<div id="game-container">
+<div id="start-screen">
   <h1>Quién Quiere Ser Millonario</h1>
   <h2>Especial: Acueductos</h2>
-  <p id="timer">Tiempo: 30s</p>
-  <p id="score">Puntos: 0</p>
+  <button onclick="iniciarJuego()">Iniciar Juego</button>
+</div>
+
+<div id="game-container" class="blur-container hidden">
+  <div id="timer">Tiempo: 30s</div>
+  <div id="points">Puntos: 0</div>
+  <p id="level"></p>
   <p class="question" id="question"></p>
   <button class="option" id="opt1"></button>
   <button class="option" id="opt2"></button>
   <button class="option" id="opt3"></button>
   <button class="option" id="opt4"></button>
   <p id="result"></p>
-  <button id="restart" onclick="reiniciarJuego()">Reiniciar Juego</button>
 </div>
+
+<div id="final-screen" class="hidden">
+  <h2>🎉 ¡Felicidades! 🎉</h2>
+  <p id="final-points"></p>
+  <button onclick="volverInicio()">Volver al Inicio</button>
+</div>
+
+<audio id="sonido-correcto" src="correcto.mp3"></audio>
+<audio id="sonido-incorrecto" src="incorrecto.mp3"></audio>
+<audio id="sonido-tiempo" src="tiempo.mp3"></audio>
 
 <script>
   const preguntas = [
     { pregunta: "¿Cuál es el principal objetivo de un acueducto?", opciones: ["Transportar agua potable", "Drenar aguas residuales", "Regular la presión", "Evitar inundaciones"], correcta: 0 },
-    { pregunta: "¿Qué tratamiento se aplica primero en una planta de agua potable?", opciones: ["Filtración", "Cloración", "Sedimentación", "Aireación"], correcta: 2 }
+    { pregunta: "¿Qué tratamiento se aplica primero en una planta de agua potable?", opciones: ["Filtración", "Cloración", "Sedimentación", "Aireación"], correcta: 2 },
+    { pregunta: "¿Qué elemento elimina microorganismos del agua?", opciones: ["Ozono", "Arena", "Hierro", "Cal"], correcta: 0 },
+    { pregunta: "¿Cuál es el nivel óptimo de cloro en agua potable?", opciones: ["0.2-0.5 mg/L", "1.0-1.5 mg/L", "2.0-3.0 mg/L", "5.0 mg/L"], correcta: 0 },
+    { pregunta: "¿Qué tipo de tubería es más usada en zonas rurales?", opciones: ["PVC", "Hierro galvanizado", "Cobre", "Polietileno"], correcta: 3 }
   ];
 
   let nivel = 0;
@@ -123,65 +165,87 @@
   let tiempoRestante = 30;
   let temporizador;
 
+  function iniciarJuego() {
+    document.getElementById("start-screen").classList.add("hidden");
+    document.getElementById("game-container").classList.remove("hidden");
+    puntos = 0;
+    nivel = 0;
+    cargarPregunta();
+  }
+
   function cargarPregunta() {
     if (nivel < preguntas.length) {
       document.getElementById("question").textContent = preguntas[nivel].pregunta;
       preguntas[nivel].opciones.forEach((op, i) => {
         const btn = document.getElementById("opt" + (i + 1));
         btn.textContent = op;
+        btn.className = "option";
         btn.disabled = false;
-        btn.classList.remove("correct", "incorrect");
-        btn.onclick = () => verificarRespuesta(i, btn);
+        btn.onclick = () => verificarRespuesta(i);
       });
       document.getElementById("result").textContent = "";
+      document.getElementById("points").textContent = "Puntos: " + puntos;
       tiempoRestante = 30;
-      actualizarTiempo();
-      clearInterval(temporizador);
-      temporizador = setInterval(() => {
-        tiempoRestante--;
-        actualizarTiempo();
-        if (tiempoRestante <= 0) {
-          clearInterval(temporizador);
-          siguientePregunta();
-        }
-      }, 1000);
+      actualizarTimer();
     } else {
-      document.getElementById("game-container").innerHTML = `<h1>Juego Terminado</h1><p>Puntos finales: ${puntos}</p><button id='restart' onclick='reiniciarJuego()'>Reiniciar Juego</button>`;
+      mostrarFinal();
     }
   }
 
-  function verificarRespuesta(seleccionada, boton) {
-    clearInterval(temporizador);
-    if (seleccionada === preguntas[nivel].correcta) {
-      boton.classList.add("correct");
+  function verificarRespuesta(seleccionada) {
+    desactivarBotones();
+    const correcta = preguntas[nivel].correcta;
+    const btnCorrecta = document.getElementById("opt" + (correcta + 1));
+    btnCorrecta.classList.add("correcta");
+    if (seleccionada === correcta) {
+      document.getElementById("sonido-correcto").play();
+      document.getElementById("opt" + (seleccionada + 1)).style.background = 'green';
       puntos += 10;
-      actualizarPuntos();
     } else {
-      boton.classList.add("incorrect");
+      document.getElementById("sonido-incorrecto").play();
+      document.getElementById("opt" + (seleccionada + 1)).style.background = 'red';
     }
-    setTimeout(siguientePregunta, 1000);
+    document.getElementById("points").textContent = "Puntos: " + puntos;
+    clearInterval(temporizador);
+    setTimeout(() => {
+      nivel++;
+      cargarPregunta();
+    }, 2000);
   }
 
-  function siguientePregunta() {
-    nivel++;
-    cargarPregunta();
+  function desactivarBotones() {
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById("opt" + i).disabled = true;
+    }
   }
 
-  function actualizarTiempo() {
-    document.getElementById("timer").textContent = `Tiempo: ${tiempoRestante}s`;
+  function actualizarTimer() {
+    document.getElementById("timer").textContent = "Tiempo: " + tiempoRestante + "s";
+    temporizador = setInterval(() => {
+      tiempoRestante--;
+      document.getElementById("timer").textContent = "Tiempo: " + tiempoRestante + "s";
+      if (tiempoRestante <= 0) {
+        clearInterval(temporizador);
+        document.getElementById("sonido-tiempo").play();
+        desactivarBotones();
+        setTimeout(() => {
+          nivel++;
+          cargarPregunta();
+        }, 1000);
+      }
+    }, 1000);
   }
 
-  function actualizarPuntos() {
-    document.getElementById("score").textContent = `Puntos: ${puntos}`;
+  function mostrarFinal() {
+    document.getElementById("game-container").classList.add("hidden");
+    document.getElementById("final-screen").classList.remove("hidden");
+    document.getElementById("final-points").textContent = `Puntos finales: ${puntos}`;
   }
 
-  function reiniciarJuego() {
-    nivel = 0;
-    puntos = 0;
-    document.getElementById("game-container").innerHTML = `<h1>Quién Quiere Ser Millonario</h1><h2>Especial: Acueductos</h2><button id='start-btn' onclick='cargarPregunta()'>Iniciar Juego</button>`;
+  function volverInicio() {
+    document.getElementById("final-screen").classList.add("hidden");
+    document.getElementById("start-screen").classList.remove("hidden");
   }
-
-  document.getElementById("game-container").innerHTML = `<h1>Quién Quiere Ser Millonario</h1><h2>Especial: Acueductos</h2><button id='start-btn' onclick='cargarPregunta()'>Iniciar Juego</button>`;
 </script>
 
 </body>
