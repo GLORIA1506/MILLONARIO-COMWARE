@@ -13,7 +13,37 @@
       margin: 0;
     }
 
+    #inicio-container {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 50px;
+      max-width: 600px;
+      margin: 150px auto;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #00dffc;
+      animation: fadeIn 1s ease;
+    }
+
+    #inicio-container h1 {
+      font-size: 30px;
+    }
+
+    #btn-iniciar {
+      padding: 15px 30px;
+      font-size: 18px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    #btn-iniciar:hover {
+      background: #218838;
+    }
+
     #game-container {
+      display: none;
       background: rgba(0, 0, 0, 0.8);
       padding: 30px;
       max-width: 600px;
@@ -21,6 +51,25 @@
       border-radius: 15px;
       box-shadow: 0 0 20px #00dffc;
       animation: fadeIn 1s ease;
+      position: relative;
+    }
+
+    #timer {
+      font-size: 18px;
+      font-weight: bold;
+      color: yellow;
+      position: absolute;
+      top: 10px;
+      left: 15px;
+    }
+
+    #puntaje {
+      font-size: 18px;
+      font-weight: bold;
+      color: gold;
+      position: absolute;
+      top: 10px;
+      right: 15px;
     }
 
     .question {
@@ -45,12 +94,6 @@
 
     .option:hover {
       transform: scale(1.05);
-    }
-
-    #puntaje, #timer {
-      font-size: 20px;
-      font-weight: bold;
-      margin: 10px 0;
     }
 
     #result {
@@ -91,11 +134,17 @@
 
 <audio id="musica-fondo" src="AUDIO.MP3.mp3" loop autoplay></audio>
 
-<div id="game-container">
+<!-- Pantalla de inicio -->
+<div id="inicio-container">
   <h1>Quién Quiere Ser Millonario</h1>
   <h2>Especial: Acueductos</h2>
-  <p id="puntaje">Puntos: 0</p>
+  <button id="btn-iniciar" onclick="iniciarJuego()">Iniciar Juego</button>
+</div>
+
+<!-- Pantalla del juego -->
+<div id="game-container">
   <p id="timer">Tiempo: 30s</p>
+  <p id="puntaje">Puntos: 0</p>
   <p class="question" id="question"></p>
   <button class="option" id="opt1"></button>
   <button class="option" id="opt2"></button>
@@ -123,6 +172,12 @@
   let tiempoRestante = 30;
   let temporizador;
 
+  function iniciarJuego() {
+    document.getElementById("inicio-container").style.display = "none";
+    document.getElementById("game-container").style.display = "block";
+    cargarPregunta();
+  }
+
   function iniciarTemporizador() {
     tiempoRestante = 30;
     document.getElementById("timer").textContent = `Tiempo: ${tiempoRestante}s`;
@@ -147,12 +202,11 @@
       preguntas[nivel].opciones.forEach((op, i) => {
         const btn = document.getElementById("opt" + (i + 1));
         btn.textContent = op;
-        btn.style.backgroundColor = "#0074D9"; 
+        btn.style.backgroundColor = "#0074D9";
         btn.disabled = false;
         btn.onclick = () => verificarRespuesta(i, btn);
       });
 
-      document.getElementById("result").textContent = "";
       iniciarTemporizador();
     } else {
       document.getElementById("result").textContent = `🎉 ¡Felicidades! Puntos finales: ${puntaje} 🎉`;
@@ -162,39 +216,13 @@
 
   function verificarRespuesta(seleccionada, boton) {
     clearInterval(temporizador);
-    desactivarBotones();
-
-    if (seleccionada === preguntas[nivel].correcta) {
-      document.getElementById("sonido-correcto").play();
-      boton.style.backgroundColor = "green";
-      puntaje += 10;
-    } else {
-      document.getElementById("sonido-incorrecto").play();
-      boton.style.backgroundColor = "red";
-    }
-
+    boton.style.backgroundColor = (seleccionada === preguntas[nivel].correcta) ? "green" : "red";
+    if (seleccionada === preguntas[nivel].correcta) puntaje += 10;
     setTimeout(() => siguientePregunta(), 1000);
   }
 
-  function siguientePregunta() {
-    nivel++;
-    cargarPregunta();
-  }
-
-  function desactivarBotones() {
-    for (let i = 1; i <= 4; i++) {
-      document.getElementById("opt" + i).disabled = true;
-    }
-  }
-
-  function reiniciarJuego() {
-    nivel = 0;
-    puntaje = 0;
-    cargarPregunta();
-    document.getElementById("restart").style.display = "none";
-  }
-
-  cargarPregunta();
+  function siguientePregunta() { nivel++; cargarPregunta(); }
+  function reiniciarJuego() { nivel = 0; puntaje = 0; cargarPregunta(); document.getElementById("restart").style.display = "none"; }
 </script>
 
 </body>
