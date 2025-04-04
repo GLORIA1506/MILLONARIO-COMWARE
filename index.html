@@ -136,36 +136,41 @@
   ];
 
   let nivel = 0;
-  let tiempoRestante = 30;
-  let temporizador;
+  let puntaje = 0;
 
   function cargarPregunta() {
     if (nivel < preguntas.length) {
       document.getElementById("question").textContent = preguntas[nivel].pregunta;
+      document.getElementById("puntaje").textContent = `Puntos: ${puntaje}`;
       preguntas[nivel].opciones.forEach((op, i) => {
         const btn = document.getElementById("opt" + (i + 1));
         btn.textContent = op;
+        btn.style.backgroundColor = "#0074D9"; // Restablecer color
         btn.disabled = false;
-        btn.onclick = () => verificarRespuesta(i);
+        btn.onclick = () => verificarRespuesta(i, btn);
       });
       document.getElementById("result").textContent = "";
     } else {
-      document.getElementById("result").textContent = "🎉 ¡Felicidades! Eres un Asesor Experto 🎉";
+      document.getElementById("result").textContent = `🎉 ¡Felicidades! Eres un Asesor Experto. Puntos finales: ${puntaje} 🎉`;
       document.getElementById("restart").style.display = "block";
     }
   }
 
-  function verificarRespuesta(seleccionada) {
+  function verificarRespuesta(seleccionada, boton) {
+    desactivarBotones();
     if (seleccionada === preguntas[nivel].correcta) {
       document.getElementById("sonido-correcto").play();
-      nivel++;
-      cargarPregunta();
+      boton.style.backgroundColor = "green";
+      puntaje += 10;
     } else {
       document.getElementById("sonido-incorrecto").play();
-      document.getElementById("result").textContent = "❌ Respuesta incorrecta. Fin del juego.";
-      document.getElementById("restart").style.display = "block";
-      desactivarBotones();
+      boton.style.backgroundColor = "red";
     }
+
+    setTimeout(() => {
+      nivel++;
+      cargarPregunta();
+    }, 1000);
   }
 
   function desactivarBotones() {
@@ -176,12 +181,14 @@
 
   function reiniciarJuego() {
     nivel = 0;
+    puntaje = 0;
     cargarPregunta();
     document.getElementById("restart").style.display = "none";
   }
 
   cargarPregunta();
 </script>
+
 
 </body>
 </html>
