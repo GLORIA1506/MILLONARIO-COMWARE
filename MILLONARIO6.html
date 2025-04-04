@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Quién Quiere Ser Millonario - Comware</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: url('Fondo.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      text-align: center;
+      margin: 0;
+    }
+
+    #game-container {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 30px;
+      max-width: 600px;
+      margin: 90px auto;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #00dffc;
+      animation: fadeIn 1s ease;
+    }
+
+    .question {
+      font-size: 24px;
+      margin: 20px 0;
+      animation: pulse 1.5s infinite;
+    }
+
+    .option {
+      display: block;
+      margin: 10px auto;
+      padding: 12px 20px;
+      width: 80%;
+      font-size: 18px;
+      background: #0074D9;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .option:hover {
+      background: #005bb5;
+      transform: scale(1.05);
+    }
+
+    #timer {
+      font-size: 20px;
+      color: yellow;
+      margin: 10px 0;
+    }
+
+    #result {
+      margin-top: 15px;
+      font-size: 20px;
+      color: #00ff99;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    #level {
+      font-size: 18px;
+      font-weight: bold;
+      color: #00ffcc;
+      margin-bottom: 10px;
+    }
+
+    #streak {
+      color: gold;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    #restart {
+      display: none;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: crimson;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #restart:hover {
+      background: darkred;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<audio id="musica-fondo" src="AUDIO.MP3.mp3" loop autoplay></audio>
+
+<div id="game-container">
+  <h1>Quién Quiere Ser Millonario</h1>
+  <h2>Especial: Acueductos</h2>
+  <p id="level"></p>
+  <p id="timer">Tiempo: 30s</p>
+  <p class="question" id="question"></p>
+  <button class="option" id="opt1"></button>
+  <button class="option" id="opt2"></button>
+  <button class="option" id="opt3"></button>
+  <button class="option" id="opt4"></button>
+  <p id="result"></p>
+  <p id="streak"></p>
+  <button id="restart" onclick="reiniciarJuego()">Reiniciar Juego</button>
+</div>
+
+<audio id="sonido-correcto" src="correcto.mp3"></audio>
+<audio id="sonido-incorrecto" src="incorrecto.mp3"></audio>
+<audio id="sonido-tiempo" src="tiempo.mp3"></audio>
+
+<script>
+  const preguntas = [
+    { pregunta: "¿Cuál es el principal objetivo de un acueducto?", opciones: ["Transportar agua potable", "Drenar aguas residuales", "Regular la presión", "Evitar inundaciones"], correcta: 0 },
+    { pregunta: "¿Qué tratamiento se aplica primero en una planta de agua potable?", opciones: ["Filtración", "Cloración", "Sedimentación", "Aireación"], correcta: 2 }
+  ];
+
+  let nivel = 0;
+  let tiempoRestante = 30;
+  let temporizador;
+
+  function cargarPregunta() {
+    if (nivel < preguntas.length) {
+      document.getElementById("question").textContent = preguntas[nivel].pregunta;
+      preguntas[nivel].opciones.forEach((op, i) => {
+        const btn = document.getElementById("opt" + (i + 1));
+        btn.textContent = op;
+        btn.disabled = false;
+        btn.onclick = () => verificarRespuesta(i);
+      });
+      document.getElementById("result").textContent = "";
+    } else {
+      document.getElementById("result").textContent = "🎉 ¡Felicidades! Eres un Asesor Experto 🎉";
+      document.getElementById("restart").style.display = "block";
+    }
+  }
+
+  function verificarRespuesta(seleccionada) {
+    if (seleccionada === preguntas[nivel].correcta) {
+      document.getElementById("sonido-correcto").play();
+      nivel++;
+      cargarPregunta();
+    } else {
+      document.getElementById("sonido-incorrecto").play();
+      document.getElementById("result").textContent = "❌ Respuesta incorrecta. Fin del juego.";
+      document.getElementById("restart").style.display = "block";
+      desactivarBotones();
+    }
+  }
+
+  function desactivarBotones() {
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById("opt" + i).disabled = true;
+    }
+  }
+
+  function reiniciarJuego() {
+    nivel = 0;
+    cargarPregunta();
+    document.getElementById("restart").style.display = "none";
+  }
+
+  cargarPregunta();
+</script>
+
+</body>
+</html>
